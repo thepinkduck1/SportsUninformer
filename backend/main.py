@@ -1,6 +1,9 @@
 from nba_api.stats.endpoints import LeagueGameLog
+from nba_api.live.nba.endpoints import boxscore
 from datetime import datetime, timedelta
 import pytz
+import pandas as pd
+import json
 
 # Get yesterday's date in local timezone
 local_tz = pytz.timezone('Australia/Sydney')
@@ -26,3 +29,16 @@ games = game_log.get_data_frames()[0]
 sorted_games = games.sort_values(['GAME_ID'], ascending=True)
 game_ids = sorted_games.groupby('GAME_ID').first().reset_index()['GAME_ID']
 print(game_ids)
+
+for game_id in game_ids:
+    temp_game_box = boxscore.BoxScore(game_id)
+    outfile_name = "{game}"
+    with open("{}.json".format(game_id), 'w') as out_file:
+        json.dump(temp_game_box.game.get_dict(), out_file, indent=4)
+
+# game_data = []
+# for game_id in game_ids:
+#     temp_game_box = boxscore.BoxScore(game_id)
+#     game_data.append(temp_game_box.game.get_dict())
+#     df_game = pd.DataFrame(temp_game_box.game.get_dict())
+#     df_game.to_csv("{gameid}.csv".format(game_id))
